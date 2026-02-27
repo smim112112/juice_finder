@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Juice Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+  <h2 class="text-center mb-4">Juice Finder</h2>
+
+ 
+  <input type="text" id="searchBar" class="form-control mb-4" placeholder="Search juice...">
+
+  
+  <div class="row g-4" id="cardContainer"></div>
+</div>
+
+
+<div class="modal fade" id="juiceModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImg" class="img-fluid mb-3">
+        <p id="modalDesc"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const cardContainer = document.getElementById("cardContainer");
+const searchBar = document.getElementById("searchBar");
+
+
+async function fetchDrinks(searchText = "juice") {
+  cardContainer.innerHTML = "<h5 class='text-center'>Loading...</h5>";
+
+  const res = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${searchText}`);
+  const data = await res.json();
+
+  displayDrinks(data.drinks);
+}
+
+
+function displayDrinks(drinks) {
+  cardContainer.innerHTML = "";
+
+  if (!drinks) {
+    cardContainer.innerHTML = "<h4 class='text-center'>No juice found</h4>";
+    return;
+  }
+
+  drinks.forEach(drink => {
+    const col = document.createElement("div");
+    col.className = "col-md-4 col-lg-3";
+
+    col.innerHTML = `
+      <div class="card h-100 shadow" style="cursor:pointer">
+        <img src="${drink.strDrinkThumb}" class="card-img-top">
+        <div class="card-body">
+          <h5 class="card-title">${drink.strDrink}</h5>
+        </div>
+      </div>
+    `;
+
+    col.addEventListener("click", () => showDetails(drink));
+    cardContainer.appendChild(col);
+  });
+}
+
+
+function showDetails(drink) {
+  document.getElementById("modalTitle").innerText = drink.strDrink;
+  document.getElementById("modalImg").src = drink.strDrinkThumb;
+  document.getElementById("modalDesc").innerText = drink.strInstructions;
+
+  const modal = new bootstrap.Modal(document.getElementById("juiceModal"));
+  modal.show();
+}
+
+
+searchBar.addEventListener("input", (e) => {
+  const value = e.target.value.trim();
+  
+  if (value === "") {
+    fetchDrinks("juice"); 
+  } else {
+    fetchDrinks(value);
+  }
+});
+
+
+fetchDrinks();
+</script>
+
+</body>
+</html>
